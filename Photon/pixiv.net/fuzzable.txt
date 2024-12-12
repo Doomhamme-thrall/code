@@ -1,0 +1,5 @@
+http://pixiv.net/login.php?return_to=
+http://pixiv.net/?return_to=
+http://pixiv.net/en/novel/comments.php?id=
+http://pixiv.net/novel/comments.php?id=
+http://pixiv.net/index.php?return_to=

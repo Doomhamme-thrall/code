@@ -1,0 +1,13 @@
+http://pixiv.net/comic-indies/$
+http://pixiv.net/login.php?return_to=
+http://pixiv.net/?return_to=
+http://pixiv.net/cdn-cgi/
+http://pixiv.net/en/group
+http://pixiv.net/en/novel/comments.php?id=
+http://pixiv.net/fanbox/tag
+http://pixiv.net/novel/comments.php?id=
+http://pixiv.net/comic-indies/
+http://pixiv.net/fanbox/search
+http://pixiv.net/comic-indies/about
+http://pixiv.net/en/search/
+http://pixiv.net/index.php?return_to=
