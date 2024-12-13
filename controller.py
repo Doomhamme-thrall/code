@@ -54,7 +54,7 @@ while running:
     ]
 
     # 发送数据
-    if input_state != last_input_state:
+    if (1):
         # 计算校验和
         checksum = (sum(input_state)+170) % 256
 
@@ -82,6 +82,9 @@ while running:
 
     # 控制循环频率
     pygame.time.wait(100)
+
+
+
 
 # 关闭串口
 ser.close()
