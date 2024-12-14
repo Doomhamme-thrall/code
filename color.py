@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
-from picamera.array import PiRGBArray
-from picamera import PiCamera
 from pyzbar import pyzbar
-from time import sleep
+import torch
+
+# 加载YOLOv5模型
+model = torch.hub.load(
+    "ultralytics/yolov5", "custom", path="yolov5s.pt"
+)
 
 
 def decode_qr_code(frame):
@@ -40,40 +43,68 @@ def detect_colors(frame):
                 )
 
 
+def detect_animals(frame):
+    # 使用YOLOv5模型进行动物识别
+    results = model(frame)
+    labels, cords = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
+    n = len(labels)
+    for i in range(n):
+        row = cords[i]
+        if row[4] >= 0.5:  # 置信度阈值
+            x1, y1, x2, y2 = (
+                int(row[0] * frame.shape[1]),
+                int(row[1] * frame.shape[0]),
+                int(row[2] * frame.shape[1]),
+                int(row[3] * frame.shape[0]),
+            )
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"Animal {int(labels[i])}",
+                (x1, y1 - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.9,
+                (0, 255, 0),
+                2,
+            )
+
+
 def main():
-    # 初始化摄像头
-    camera = PiCamera()
-    camera.resolution = (640, 480)
-    camera.framerate = 32
-    raw_capture = PiRGBArray(camera, size=(640, 480))
+    # 打开USB摄像头，参数0表示第一个摄像头
+    cap = cv2.VideoCapture(0)
 
-    # 让摄像头预热
-    sleep(2)
+    if not cap.isOpened():
+        print("无法打开摄像头")
+        return
 
-    for frame in camera.capture_continuous(
-        raw_capture, format="bgr", use_video_port=True
-    ):
-        image = frame.array
+    while True:
+        # 读取摄像头的一帧
+        ret, frame = cap.read()
+
+        if not ret:
+            print("无法接收帧，结束程序")
+            break
 
         # 识别二维码
-        qr_data = decode_qr_code(image)
+        qr_data = decode_qr_code(frame)
         if qr_data:
             print(f"QR Code Data: {qr_data}")
 
         # 进行颜色识别
-        detect_colors(image)
+        detect_colors(frame)
+
+        # 进行动物识别
+        detect_animals(frame)
 
         # 显示帧
-        cv2.imshow("Frame", image)
+        cv2.imshow("Frame", frame)
 
         # 按下'q'键退出
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
-        # 清除流以准备下一个帧
-        raw_capture.truncate(0)
-
     # 释放摄像头并关闭窗口
+    cap.release()
     cv2.destroyAllWindows()
 
 
