@@ -3,23 +3,27 @@ import numpy as np
 import torch
 from pyzbar import pyzbar
 
-# 加载YOLOv5模型
-model = torch.hub.load("ultralytics/yolov5", "custom", path="yolov5s.pt")
+model = torch.hub.load("ultralytics/yolov5", "custom", path="best.pt")
+
+animal_labels = [
+    "turtle",
+    "octopus",
+    "shark",
+]
 
 
-def decode_qr_code(frame):
-    # 使用pyzbar库解码二维码
+def decode_qr_code(frame, qr_detected):
+    if qr_detected:
+        return None
     decoded_objects = pyzbar.decode(frame)
     for obj in decoded_objects:
-        # 获取二维码信息
         qr_data = obj.data.decode("utf-8")
         print(f"QR Code detected: {qr_data}")
         return qr_data
     return None
 
 
-def detect_colors(frame):
-    # 转换为HSV颜色空间
+def detect_colors(frame, last_color):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # 定义颜色范围
@@ -29,6 +33,7 @@ def detect_colors(frame):
         "Green": ((40, 150, 0), (80, 255, 255)),
     }
 
+    detected_colors = []
     for color_name, (lower, upper) in color_ranges.items():
         mask = cv2.inRange(hsv, lower, upper)
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -36,16 +41,20 @@ def detect_colors(frame):
             area = cv2.contourArea(contour)
             if area > 500:  # 只考虑大于500像素的区域
                 x, y, w, h = cv2.boundingRect(contour)
-                print(
-                    f"Detected {color_name} color block at (x: {x}, y: {y}, width: {w}, height: {h}) with area {area}"
-                )
+                detected_colors.append(color_name)
+                if color_name != last_color:
+                    print(
+                        f"Detected {color_name} color block at (x: {x}, y: {y}, width: {w}, height: {h}) with area {area}"
+                    )
+    return detected_colors
 
 
-def detect_animals(frame):
+def detect_animals(frame, last_animal):
     # 使用YOLOv5模型进行动物识别
     results = model(frame)
     labels, cords = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
     n = len(labels)
+    detected_animals = []
     for i in range(n):
         row = cords[i]
         if row[4] >= 0.5:  # 置信度阈值
@@ -56,15 +65,20 @@ def detect_animals(frame):
                 int(row[3] * frame.shape[0]),
             )
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(
-                frame,
-                f"Animal {int(labels[i])}",
-                (x1, y1 - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.9,
-                (0, 255, 0),
-                2,
-            )
+            animal_name = animal_labels[int(labels[i])]
+            detected_animals.append(animal_name)
+            if animal_name != last_animal:
+                cv2.putText(
+                    frame,
+                    f"{animal_name}",
+                    (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    (0, 255, 0),
+                    2,
+                )
+                print(f"Detected animal: {animal_name}")
+    return detected_animals
 
 
 def main():
@@ -75,6 +89,10 @@ def main():
         print("无法打开摄像头")
         return
 
+    qr_detected = False
+    last_color = None
+    last_animal = None
+
     while True:
         # 读取摄像头的一帧
         ret, frame = cap.read()
@@ -84,15 +102,20 @@ def main():
             break
 
         # 识别二维码
-        qr_data = decode_qr_code(frame)
+        qr_data = decode_qr_code(frame, qr_detected)
         if qr_data:
             print(f"QR Code Data: {qr_data}")
+            qr_detected = True
 
         # 进行颜色识别
-        detect_colors(frame)
+        detected_colors = detect_colors(frame, last_color)
+        if detected_colors:
+            last_color = detected_colors[0]
 
         # 进行动物识别
-        detect_animals(frame)
+        detected_animals = detect_animals(frame, last_animal)
+        if detected_animals:
+            last_animal = detected_animals[0]
 
         # 显示帧
         cv2.imshow("Frame", frame)
