@@ -1,12 +1,10 @@
 import cv2
 import numpy as np
-from pyzbar import pyzbar
 import torch
+from pyzbar import pyzbar
 
 # 加载YOLOv5模型
-model = torch.hub.load(
-    "ultralytics/yolov5", "custom", path="yolov5s.pt"
-)
+model = torch.hub.load("ultralytics/yolov5", "custom", path="yolov5s.pt")
 
 
 def decode_qr_code(frame):
