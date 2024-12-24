@@ -11,7 +11,6 @@ joystick = pygame.joystick.Joystick(0)
 joystick.init()
 ser = serial.Serial("COM5", 9600, timeout=0.1)  # 设置串口，timeout 避免阻塞
 
-
 last_input_state = None
 
 running = True
@@ -53,7 +52,7 @@ while running:
 
         try:
             ser.write(bytearray(data_to_send))
-            print(f"sended: {data_to_send}")
+            # print(f"sended: {data_to_send}")
         except serial.SerialException as e:
             print(f"send failed: {e}")
 
@@ -68,7 +67,7 @@ while running:
     except serial.SerialException as e:
         print(f"receive failed {e}")
 
-    pygame.time.wait(10)  # 100hz
+    pygame.time.wait(500)  # 100hz
 
 ser.close()
 

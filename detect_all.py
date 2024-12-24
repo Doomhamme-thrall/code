@@ -11,7 +11,6 @@ animal_labels = [
     "shark",
 ]
 
-
 def decode_qr_code(frame, qr_detected):
     if qr_detected:
         return None
