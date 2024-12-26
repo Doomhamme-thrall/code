@@ -1,88 +1,43 @@
-import sys
-
-from PyQt5.QtWidgets import (
-    QApplication,
-    QLabel,
-    QLineEdit,
-    QMessageBox,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+import cv2
 
 
-class LoginWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-        self.users = {}
+def record_video(output_filename, codec="XVID", fps=20.0, resolution=(640, 480)):
+    # 打开默认摄像头
+    cap = cv2.VideoCapture(0)
 
-    def initUI(self):
-        self.setWindowTitle("账户登录")
-        self.setGeometry(1000, 700, 600, 400)
+    # 检查摄像头是否成功打开
+    if not cap.isOpened():
+        print("无法打开摄像头")
+        return
 
-        self.layout = QVBoxLayout()
+    # 定义视频编解码器并创建 VideoWriter 对象
+    fourcc = cv2.VideoWriter_fourcc(*codec)
+    out = cv2.VideoWriter(output_filename, fourcc, fps, resolution)
 
-        self.username_label = QLabel("学号:")
-        self.setGeometry(1000, 700, 600, 400)
-        self.layout.addWidget(self.username_label)
-        self.username_input = QLineEdit()
-        self.layout.addWidget(self.username_input)
+    print("按 'q' 键停止录制")
 
-        self.password_label = QLabel("密码:")
-        self.layout.addWidget(self.password_label)
-        self.password_input = QLineEdit()
-        self.password_input.setEchoMode(QLineEdit.Password)
-        self.layout.addWidget(self.password_input)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("无法接收帧 (stream end?). Exiting ...")
+            break
 
-        self.login_button = QPushButton("登录")
-        self.login_button.clicked.connect(self.login)
-        self.layout.addWidget(self.login_button)
+        # 写入帧到视频文件
+        out.write(frame)
 
-        self.register_button = QPushButton("注册")
-        self.register_button.clicked.connect(self.register)
-        self.layout.addWidget(self.register_button)
+        # 显示帧
+        cv2.imshow("Recording", frame)
 
-        self.setLayout(self.layout)
+        # 按 'q' 键退出录制
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
-    def login(self):
-        username = self.username_input.text()
-        password = self.password_input.text()
-        if username in self.users and self.users[username] == password:
-            self.openHomePage()
-        else:
-            QMessageBox.warning(self, "错误", "用户名或密码错误")
-
-    def register(self):
-        username = self.username_input.text()
-        password = self.password_input.text()
-        if username in self.users:
-            QMessageBox.warning(self, "错误", "该学号已注册")
-        else:
-            self.users[username] = password
-            QMessageBox.information(self, "注册", "注册成功")
-
-    def openHomePage(self):
-        self.home_page = HomePage()
-        self.home_page.show()
-
-
-class HomePage(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle("主页")
-        self.layout = QVBoxLayout()
-        self.link_label = QLabel('<a href="http://www.hdu.edu.cn">hdu.edu.cn</a>')
-        self.link_label.setOpenExternalLinks(True)
-        self.layout.addWidget(self.link_label)
-        self.setLayout(self.layout)
+    # 释放资源
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    login_window = LoginWindow()
-    login_window.show()
-    sys.exit(app.exec_())
+    output_filename = "output.avi"
+    record_video(output_filename)
