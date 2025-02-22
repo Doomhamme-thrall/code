@@ -4,9 +4,6 @@ import cv2
 import numpy as np
 
 calibration_file = "stereo_calibration.npz"
-if not os.path.exists(calibration_file):
-    print(f"标定文件 {calibration_file} 不存在，请先完成标定！")
-    exit()
 
 data = np.load(calibration_file)
 mtx_left = data["mtx_left"]
@@ -26,7 +23,7 @@ right_image_path = "captured_images/right_002.jpg"
 left_image = cv2.imread(left_image_path)
 right_image = cv2.imread(right_image_path)
 
-# 校正图像
+# 校正
 map_left_1, map_left_2 = cv2.initUndistortRectifyMap(
     mtx_left, dist_left, None, mtx_left, left_image.shape[:2][::-1], cv2.CV_16SC2
 )
@@ -42,7 +39,7 @@ selected_points = {"left": [], "right": []}
 
 
 def select_point(event, x, y, flags, param):
-    """鼠标回调函数，用于选择点"""
+    """鼠标回调"""
     if event == cv2.EVENT_LBUTTONDOWN:
         img, img_name = param
         selected_points[img_name].append((x, y))
@@ -58,12 +55,12 @@ cv2.setMouseCallback("Left Image", select_point, param=(left_undistorted, "left"
 cv2.imshow("Right Image", right_undistorted)
 cv2.setMouseCallback("Right Image", select_point, param=(right_undistorted, "right"))
 
-print("请在每张图像上选择两个点（按任意键退出）")
+print("在每张图像上选择两个点")
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 if len(selected_points["left"]) != 2 or len(selected_points["right"]) != 2:
-    print("请在左右图像中各选择两点！")
+    print("左右图像中各选择两点")
     exit()
 
 # 计算视差
@@ -74,11 +71,11 @@ disparity1 = abs(point1_left[0] - point1_right[0])
 disparity2 = abs(point2_left[0] - point2_right[0])
 
 if disparity1 > 0 and disparity2 > 0:
-    # 计算深度（距离相机的距离）
+    # 计算深度
     depth1 = (mtx_left[0, 0] * baseline) / disparity1
     depth2 = (mtx_left[0, 0] * baseline) / disparity2
 
-    # 转换为 3D 坐标（相机坐标系）
+    # 转换为 3D 坐标
     x1 = (point1_left[0] - mtx_left[0, 2]) * depth1 / mtx_left[0, 0]
     y1 = (point1_left[1] - mtx_left[1, 2]) * depth1 / mtx_left[1, 1]
     z1 = depth1
