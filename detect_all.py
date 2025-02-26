@@ -11,6 +11,7 @@ animal_labels = [
     "shark",
 ]
 
+
 def decode_qr_code(frame, qr_detected):
     if qr_detected:
         return None
@@ -85,7 +86,7 @@ def main():
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
-        print("无法打开摄像头")
+        print("camera error")
         return
 
     qr_detected = False
@@ -97,7 +98,7 @@ def main():
         ret, frame = cap.read()
 
         if not ret:
-            print("无法接收帧，结束程序")
+            print("frame error")
             break
 
         # 识别二维码

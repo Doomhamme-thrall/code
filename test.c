@@ -1,18 +1,11 @@
 #include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-
-int main(void)
+#include <math.h>
+int main()
 {
-    int unix_time = time(NULL);
-    printf("Unix time: %d\n", unix_time);
+    int a = 0;
+    scanf("%d", &a);
+    printf("%d %d %d", a / 15, a / 20, a * 90);
 
-    while(1)
-    {
-        int unix_time = time(NULL);
-        printf("Unix time: %d\n", unix_time);
-        sleep(1);
-    }
-    // 输出年月日时分秒
+    pow(a, 2);
     return 0;
 }
