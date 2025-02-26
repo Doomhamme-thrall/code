@@ -15,8 +15,8 @@ def timer(func):
 
         mem_usage = max(mem_usage_after) - min(mem_usage_before)
 
-        print(f"function {func.__name__} cost {elapsed_time:.6f} seconds")
-        print(f"function {func.__name__} used {mem_usage:.6f} MiB of memory")
+        print(f"{elapsed_time:.6f} S")
+        print(f"{mem_usage:.6f} MiB")
 
         return result
 

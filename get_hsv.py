@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 hsv_min = np.array([255, 255, 255])
 hsv_max = np.array([0, 0, 0])
 
