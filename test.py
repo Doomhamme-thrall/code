@@ -13,6 +13,12 @@ while True:
     if not ret:
         break
 
+    (h, w) = frame.shape[:2]
+    center = (w // 2, h // 2)
+
+    m = cv2.getRotationMatrix2D(center, 270, 1) #旋转矩阵
+    frame = cv2.warpAffine(frame, m, (w, h))
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     blurred = cv2.GaussianBlur(hsv, (11, 11), 0)
     mask = cv2.inRange(blurred, lower_hsv, upper_hsv)
@@ -36,6 +42,7 @@ while True:
                 (255, 255, 255),
                 2,
             )
+            print(center)
 
             # ser.write(f"{center[0]} {center[1]}\n".encode())
 
