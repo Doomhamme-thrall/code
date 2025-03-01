@@ -8,6 +8,9 @@ lower_hsv = np.array([64, 72, 49])
 cap = cv2.VideoCapture(0)
 # ser = serial.Serial("COM5", 9600, timeout=0.1)
 
+
+
+
 while True:
     ret, frame = cap.read()
     if not ret:
