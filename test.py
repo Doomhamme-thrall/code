@@ -6,10 +6,16 @@ upper_hsv = np.array([153, 255, 255])
 lower_hsv = np.array([64, 72, 49])
 
 cap = cv2.VideoCapture(0)
-# ser = serial.Serial("COM5", 9600, timeout=0.1)
+ser = serial.Serial("COM5", 9600, timeout=0.1)
 
+# 图像四角坐标
+src_points = np.array(
+    [[100, 100], [200, 100], [200, 200], [100, 200]], dtype=np.float32
+)
+# 真实四角坐标
+dst_points = np.array([[0, 0], [10, 0], [10, 10], [0, 10]], dtype=np.float32)
 
-
+perspective_matrix = cv2.getPerspectiveTransform(src_points, dst_points)
 
 while True:
     ret, frame = cap.read()
@@ -19,7 +25,7 @@ while True:
     (h, w) = frame.shape[:2]
     center = (w // 2, h // 2)
 
-    m = cv2.getRotationMatrix2D(center, 270, 1) #旋转矩阵
+    m = cv2.getRotationMatrix2D(center, 0, 1)  # 旋转矩阵
     frame = cv2.warpAffine(frame, m, (w, h))
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -35,21 +41,27 @@ while True:
             center = (int(x), int(y))
             radius = int(radius)
 
+            actual = cv2.perspectiveTransform(
+                np.array([center], dtype=np.float32).reshape(-1, 1, 2),
+                perspective_matrix,
+            )
+            x, y = actual[0][0]
+
             cv2.circle(frame, center, radius, (0, 255, 0), 3)
             cv2.putText(
                 frame,
-                f"Area: {int(area)}",
+                f"{int(area)},{x, y}",
                 (center[0] + radius, center[1]),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,
                 (255, 255, 255),
                 2,
             )
-            print(center)
+            print(x, y)
 
-            # ser.write(f"{center[0]} {center[1]}\n".encode())
+            ser.write(f"{center[0]} {center[1]}\n".encode())
 
-    cv2.imshow("mask", frame)
+    cv2.imshow("frame", frame)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
