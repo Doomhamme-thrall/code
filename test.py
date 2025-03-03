@@ -6,7 +6,7 @@ upper_hsv = np.array([153, 255, 255])
 lower_hsv = np.array([64, 72, 49])
 
 cap = cv2.VideoCapture(0)
-ser = serial.Serial("COM5", 9600, timeout=0.1)
+# ser = serial.Serial("COM5", 9600, timeout=0.1)
 
 # 图像四角坐标
 src_points = np.array(
@@ -59,7 +59,7 @@ while True:
             )
             print(x, y)
 
-            ser.write(f"{center[0]} {center[1]}\n".encode())
+            # ser.write(f"{center[0]} {center[1]}\n".encode())
 
     cv2.imshow("frame", frame)
 
