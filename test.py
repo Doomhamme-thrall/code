@@ -34,6 +34,8 @@ while True:
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+
+
     for contour in contours:
         area = cv2.contourArea(contour)
         if area > 1000:
