@@ -2,11 +2,20 @@ import cv2
 import numpy as np
 import serial
 
+
+class pid_data:
+    def __init__(self):
+        pid_data.p = 0
+        pid_data.i = 0
+        pid_data.d = 0
+
+
 upper_hsv = np.array([153, 255, 255])
 lower_hsv = np.array([64, 72, 49])
 
 cap = cv2.VideoCapture(0)
-# ser = serial.Serial("COM5", 9600, timeout=0.1)
+ser = serial.Serial("COM5", 9600, timeout=0.1)
+
 
 # 图像四角坐标
 src_points = np.array(
@@ -33,8 +42,6 @@ while True:
     mask = cv2.inRange(blurred, lower_hsv, upper_hsv)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-
 
     for contour in contours:
         area = cv2.contourArea(contour)
