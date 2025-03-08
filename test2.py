@@ -1,23 +1,42 @@
 import cv2
 import numpy as np
-import serial
 
 
-class pid_data:
-    def __init__(self):
-        pid_data.p = 1
-        pid_data.i = 0
-        pid_data.d = 0
-        pid_data.cmd = 0
+def process_frame(frame):
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+
+    _, binary = cv2.threshold(l, 25, 255, cv2.THRESH_BINARY_INV)
+    cv2.imshow("Binary_before", binary)
+
+    kernel = np.ones((22, 22), np.uint8)
+    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+    cv2.imshow("Binary_after", binary)
+
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
+    # contours = [
+    #     contour for contour in contours if 500 <= cv2.contourArea(contour) <= 2000
+    # ]
+
+    cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
+    return frame
 
 
-pid_data = pid_data()
+def main():
+    cap = cv2.VideoCapture(0)
 
-ser = serial.Serial("COM5", 9600, timeout=0.1)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        processed_frame = process_frame(frame)
+        cv2.imshow("Line Follower", processed_frame)
 
-while 1:
-    pid_data.p, pid_data.i, pid_data.d, pid_data.cmd = input("pid:").split()
-    print(f"{pid_data.p} {pid_data.i} {pid_data.d} {pid_data.cmd}")
-    ser.write(
-        f"{pid_data.p} {pid_data.i} {pid_data.d} {pid_data.cmd}\n".encode("utf-8")
-    )
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()

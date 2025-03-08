@@ -4,7 +4,7 @@ import serial
 pygame.init()
 pygame.joystick.init()
 if pygame.joystick.get_count() == 0:
-    print("没有检测到手柄")
+    print("none")
     pygame.quit()
     exit()
 joystick = pygame.joystick.Joystick(0)
@@ -18,7 +18,6 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
     # 摇杆状态
     left_stick_x = int((joystick.get_axis(0) + 1) * 100)  # 映射到 0-200
     right_stick_y = int((joystick.get_axis(3) + 1) * 100)
@@ -56,13 +55,11 @@ while running:
         except serial.SerialException as e:
             print(f"send failed: {e}")
 
-        # 更新上一次的输入状态
         last_input_state = input_state
 
-    # 接收串口数据
     try:
-        if ser.in_waiting > 0:  # 检查是否有数据可读
-            received_data = ser.read(ser.in_waiting)  # 读取所有可用数据
+        if ser.in_waiting > 0:
+            received_data = ser.read(ser.in_waiting)
             print(f"received: {received_data.decode('utf-8', errors='ignore')}")
     except serial.SerialException as e:
         print(f"receive failed {e}")
