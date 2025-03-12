@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import serial
 
 # ser = serial.Serial("COM5", 9600, timeout=0.1)
 parts = 3
@@ -22,6 +23,9 @@ cv2.createTrackbar("close_kernel", "Trackbars", close_kernel, 100, nothing)
 
 
 def frame_cut(frame, num_parts, scale):
+    """
+    图像切割函数
+    """
     height, width = frame.shape[:2]
     part_height = height // num_parts
     cutted_frames = []
@@ -42,6 +46,9 @@ def frame_cut(frame, num_parts, scale):
 
 
 def get_center(frames, blur_kernel, threshold, close_kernel):
+    """
+    获取图像中心
+    """
     centers = []
     for frame in frames:
         if blur_kernel % 2 == 0:
@@ -71,6 +78,9 @@ def get_center(frames, blur_kernel, threshold, close_kernel):
 
 
 def line(frame, centers, scale, parts):
+    """
+    连接所有中心
+    """
     prev_center = None
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
@@ -83,6 +93,7 @@ def line(frame, centers, scale, parts):
             if prev_center is not None:
                 cv2.line(frame, prev_center, center, (0, 255, 0), 2)
             prev_center = center
+            print(width // 2 - cX)
 
 
 def main():
@@ -93,11 +104,11 @@ def main():
         if not ret:
             break
 
-        parts = cv2.getTrackbarPos("parts", "Trackbars")
-        scale = cv2.getTrackbarPos("scale", "Trackbars") / 100
-        blur_kernel = cv2.getTrackbarPos("blur", "Trackbars")
-        threshold = cv2.getTrackbarPos("threshold", "Trackbars")
-        close_kernel = cv2.getTrackbarPos("close_kernel", "Trackbars")
+        parts = cv2.getTrackbarPos("parts", "Trackbars")  # 垂直分割的数量
+        scale = cv2.getTrackbarPos("scale", "Trackbars") / 100  # 水平限幅
+        blur_kernel = cv2.getTrackbarPos("blur", "Trackbars")  # 高斯模糊核
+        threshold = cv2.getTrackbarPos("threshold", "Trackbars")  # canny阈值
+        close_kernel = cv2.getTrackbarPos("close_kernel", "Trackbars")  # 闭运算核
 
         cutted_frames = frame_cut(frame, parts, scale)
         centers = get_center(cutted_frames, blur_kernel, threshold, close_kernel)
