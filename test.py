@@ -13,11 +13,27 @@ class pid_data:
         pid_data.d = 0
 
 
-pid = pid_data()
-
-
 lower_hsv = np.array([23, 3, 78])
 upper_hsv = np.array([158, 149, 161])
+
+
+def nothing(x):
+    pass
+
+
+# 创建窗口
+cv2.namedWindow("Trackbars")
+
+# 创建滑动条，用于调整红色的HSV上下限
+cv2.createTrackbar("H_low", "Trackbars", lower_hsv[0], 180, nothing)
+cv2.createTrackbar("S_low", "Trackbars", lower_hsv[1], 255, nothing)
+cv2.createTrackbar("V_low", "Trackbars", lower_hsv[2], 255, nothing)
+cv2.createTrackbar("H_high", "Trackbars", upper_hsv[0], 180, nothing)
+cv2.createTrackbar("S_high", "Trackbars", upper_hsv[1], 255, nothing)
+cv2.createTrackbar("V_high", "Trackbars", upper_hsv[2], 255, nothing)
+
+pid = pid_data()
+
 
 cap = cv2.VideoCapture(0)
 # ser = serial.Serial("COM5", 9600, timeout=0.1)
@@ -55,6 +71,13 @@ while True:
     if not ret:
         break
 
+    lower_hsv[0] = cv2.getTrackbarPos("H_low", "Trackbars")
+    lower_hsv[1] = cv2.getTrackbarPos("S_low", "Trackbars")
+    lower_hsv[2] = cv2.getTrackbarPos("V_low", "Trackbars")
+    upper_hsv[0] = cv2.getTrackbarPos("H_high", "Trackbars")
+    upper_hsv[1] = cv2.getTrackbarPos("S_high", "Trackbars")
+    upper_hsv[2] = cv2.getTrackbarPos("V_high", "Trackbars")
+
     (h, w) = frame.shape[:2]
     center = (w // 2, h // 2)
 
@@ -68,7 +91,7 @@ while True:
 
     # lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
     # blurred = cv2.GaussianBlur(lab, (11, 11), 0)
-    # mask = cv2.inRange(blurred, lower_lab, upper_lab)
+    # mask = cv2.inRange(blurred, lower__lab, upper_lab)
     # cv2.imshow("lab", lab)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -76,9 +99,12 @@ while True:
     for contour in contours:
         area = cv2.contourArea(contour)
         if area > 100:
-            (x, y), radius = cv2.minEnclosingTriangle(contours)
-            center = (int(x), int(y))
-            radius = int(radius)
+            retval, triangle = cv2.minEnclosingTriangle(contour)
+            triangle = np.int32(triangle)
+
+            cv2.polylines(
+                frame, [triangle], isClosed=True, color=(0, 255, 0), thickness=2
+            )
 
             # actual = cv2.perspectiveTransform(
             #     np.array([center], dtype=np.float32).reshape(-1, 1, 2),
@@ -86,17 +112,17 @@ while True:
             # )
             # x, y = actual[0][0]
 
-            cv2.circle(frame, center, radius, (0, 255, 0), 3)
-            cv2.putText(
-                frame,
-                f"{int(area)},{x, y}",
-                (center[0] + radius, center[1]),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (255, 255, 255),
-                2,
-            )
-            print(x, y)
+            # cv2.circle(frame, center, radius, (0, 255, 0), 3)
+            # cv2.putText(
+            #     frame,
+            #     f"{int(area)},{x, y}",
+            #     (center[0] + radius, center[1]),
+            #     cv2.FONT_HERSHEY_SIMPLEX,
+            #     0.5,
+            #     (255, 255, 255),
+            #     2,
+            # )
+            # print(x, y)
 
             # ser.write(f"{center[0]} {center[1]}\n".encode())
 
@@ -106,4 +132,5 @@ while True:
     cv2.imshow("frame", frame)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
+        print()
         break
