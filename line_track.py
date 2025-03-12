@@ -1,10 +1,12 @@
 import cv2
+import numpy as np
 
 # ser = serial.Serial("COM5", 9600, timeout=0.1)
-parts = 2
+parts = 3
 binary_threshold = 5
-kernel_size = 22
-scale = 0.9
+threshold = 22
+scale = 0.5
+close_kernel = 5
 
 
 def nothing(x):
@@ -15,7 +17,8 @@ cv2.namedWindow("Trackbars")
 cv2.createTrackbar("parts", "Trackbars", parts, 10, nothing)
 cv2.createTrackbar("scale", "Trackbars", int(scale * 100), 100, nothing)
 cv2.createTrackbar("blur", "Trackbars", binary_threshold, 50, nothing)
-cv2.createTrackbar("edge", "Trackbars", kernel_size, 100, nothing)
+cv2.createTrackbar("threshold", "Trackbars", threshold, 100, nothing)
+cv2.createTrackbar("close_kernel", "Trackbars", close_kernel, 100, nothing)
 
 
 def frame_cut(frame, num_parts, scale):
@@ -38,7 +41,7 @@ def frame_cut(frame, num_parts, scale):
     return cutted_frames
 
 
-def get_center(frames, blur_kernel, kernel_size):
+def get_center(frames, blur_kernel, threshold, close_kernel):
     centers = []
     for frame in frames:
         if blur_kernel % 2 == 0:
@@ -46,8 +49,10 @@ def get_center(frames, blur_kernel, kernel_size):
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (blur_kernel, blur_kernel), 0)
-        edges = cv2.Canny(blurred, kernel_size, 150)
+        edges = cv2.Canny(blurred, threshold, 150)
 
+        kernel = np.ones((close_kernel, close_kernel), np.uint8)
+        edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
         cv2.imshow("edges", edges)
 
         contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -65,6 +70,21 @@ def get_center(frames, blur_kernel, kernel_size):
     return centers
 
 
+def line(frame, centers, scale, parts):
+    prev_center = None
+    for i, (cX, cY) in enumerate(centers):
+        if cX is not None and cY is not None:
+            height, width = frame.shape[:2]
+            part_height = height // parts
+            part_width = int(width * (1 - scale) / 2)
+            start_row = i * part_height
+            center = (cX + part_width, start_row + cY)
+            cv2.circle(frame, (cX + part_width, start_row + cY), 5, (255, 0, 0), -1)
+            if prev_center is not None:
+                cv2.line(frame, prev_center, center, (0, 255, 0), 2)
+            prev_center = center
+
+
 def main():
     cap = cv2.VideoCapture(0)
 
@@ -76,23 +96,13 @@ def main():
         parts = cv2.getTrackbarPos("parts", "Trackbars")
         scale = cv2.getTrackbarPos("scale", "Trackbars") / 100
         blur_kernel = cv2.getTrackbarPos("blur", "Trackbars")
-        kernel_size = cv2.getTrackbarPos("edge", "Trackbars")
+        threshold = cv2.getTrackbarPos("threshold", "Trackbars")
+        close_kernel = cv2.getTrackbarPos("close_kernel", "Trackbars")
 
         cutted_frames = frame_cut(frame, parts, scale)
-        centers = get_center(cutted_frames, blur_kernel, kernel_size)
+        centers = get_center(cutted_frames, blur_kernel, threshold, close_kernel)
 
-        prev_center = None
-        for i, (cX, cY) in enumerate(centers):
-            if cX is not None and cY is not None:
-                height, width = frame.shape[:2]
-                part_height = height // parts
-                part_width = int(width * (1 - scale) / 2)
-                start_row = i * part_height
-                center = (cX + part_width, start_row + cY)
-                cv2.circle(frame, (cX + part_width, start_row + cY), 5, (0, 255, 0), -1)
-                if prev_center is not None:
-                    cv2.line(frame, prev_center, center, (0, 255, 0), 2)
-                prev_center = center
+        line(frame, centers, scale, parts)
 
         cv2.imshow("frame", frame)
 
