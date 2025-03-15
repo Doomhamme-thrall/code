@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import serial
 
-# ser = serial.Serial("COM5", 9600, timeout=0.1)
-parts = 3
+ser = serial.Serial("COM5", 9600, timeout=0.1)
+parts = 5
 binary_threshold = 5
 threshold = 22
 scale = 0.5
@@ -94,6 +94,7 @@ def line(frame, centers, scale, parts):
                 cv2.line(frame, prev_center, center, (0, 255, 0), 2)
             prev_center = center
             print(width // 2 - cX)
+            ser.write(f"{width // 2 - cX}\n".encode())
 
 
 def main():
@@ -104,6 +105,7 @@ def main():
         if not ret:
             break
 
+        # 滑条读取
         parts = cv2.getTrackbarPos("parts", "Trackbars")  # 垂直分割的数量
         scale = cv2.getTrackbarPos("scale", "Trackbars") / 100  # 水平限幅
         blur_kernel = cv2.getTrackbarPos("blur", "Trackbars")  # 高斯模糊核
