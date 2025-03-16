@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import serial
 
-ser = serial.Serial("COM5", 9600, timeout=0.1)
+ser = serial.Serial("COM13", 9600, timeout=0.1)
 parts = 5
 binary_threshold = 5
 threshold = 22
@@ -82,6 +82,13 @@ def line(frame, centers, scale, parts):
     连接所有中心
     """
     prev_center = None
+    cv2.line(
+        frame,
+        (frame.shape[1] // 2, 0),
+        (frame.shape[1] // 2, frame.shape[0]),
+        (0, 0, 255),
+        2,
+    )
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
             height, width = frame.shape[:2]
@@ -93,7 +100,7 @@ def line(frame, centers, scale, parts):
             if prev_center is not None:
                 cv2.line(frame, prev_center, center, (0, 255, 0), 2)
             prev_center = center
-            print(width // 2 - cX)
+            print(i, ":", width // 2 - cX - part_width)
             ser.write(f"{width // 2 - cX}\n".encode())
 
 
