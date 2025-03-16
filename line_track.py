@@ -1,3 +1,5 @@
+from collections import deque
+
 import cv2
 import numpy as np
 import serial
@@ -8,6 +10,7 @@ binary_threshold = 5
 threshold = 22
 scale = 0.5
 close_kernel = 5
+off_history = deque(maxlen=25)
 
 
 def nothing(x):
@@ -47,7 +50,7 @@ def frame_cut(frame, num_parts, scale):
 
 def get_center(frames, blur_kernel, threshold, close_kernel):
     """
-    获取图像中心
+    获取区域中心
     """
     centers = []
     for frame in frames:
@@ -100,8 +103,20 @@ def line(frame, centers, scale, parts):
             if prev_center is not None:
                 cv2.line(frame, prev_center, center, (0, 255, 0), 2)
             prev_center = center
-            print(i, ":", width // 2 - cX - part_width)
-            ser.write(f"{width // 2 - cX}\n".encode())
+
+            # 偏移量
+            off = width // 2 - cX - part_width
+            off_history.append(off)
+    filtered_off = sum(off_history) // len(off_history)
+    cv2.line(
+        frame,
+        (width // 2 - filtered_off, 0),
+        (width // 2 - filtered_off, height),
+        (255, 0, 0),
+        1,
+    )
+    print(filtered_off)
+    ser.write(f"{filtered_off}\n".encode())
 
 
 def main():
@@ -116,7 +131,7 @@ def main():
         parts = cv2.getTrackbarPos("parts", "Trackbars")  # 垂直分割的数量
         scale = cv2.getTrackbarPos("scale", "Trackbars") / 100  # 水平限幅
         blur_kernel = cv2.getTrackbarPos("blur", "Trackbars")  # 高斯模糊核
-        threshold = cv2.getTrackbarPos("threshold", "Trackbars")  # canny阈值
+        threshold = cv2.getTrackbarPos("threshold", "Trackbars")  # 边缘检测阈值
         close_kernel = cv2.getTrackbarPos("close_kernel", "Trackbars")  # 闭运算核
 
         cutted_frames = frame_cut(frame, parts, scale)
