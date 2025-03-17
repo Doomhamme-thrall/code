@@ -148,6 +148,7 @@ def main():
         fps = 1 / (end_time - start_time)
         fps_history.append(fps)
         avg_fps = sum(fps_history) / len(fps_history)
+        print(f"FPS: {int(avg_fps)}")
         cv2.putText(
             frame,
             f"FPS: {int(avg_fps)}",
