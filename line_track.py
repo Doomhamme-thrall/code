@@ -1,16 +1,17 @@
+import time
 from collections import deque
 
 import cv2
 import numpy as np
 import serial
 
-ser = serial.Serial("COM13", 9600, timeout=0.1)
+ser = serial.Serial("COM5", 9600, timeout=0.1)
 parts = 5
 binary_threshold = 5
 threshold = 22
 scale = 0.5
 close_kernel = 5
-off_history = deque(maxlen=25)
+fps_history = deque(maxlen=30)
 
 
 def nothing(x):
@@ -53,6 +54,7 @@ def get_center(frames, blur_kernel, threshold, close_kernel):
     获取区域中心
     """
     centers = []
+
     for frame in frames:
         if blur_kernel % 2 == 0:
             blur_kernel += 1
@@ -85,6 +87,7 @@ def line(frame, centers, scale, parts):
     连接所有中心
     """
     prev_center = None
+    # 基准线
     cv2.line(
         frame,
         (frame.shape[1] // 2, 0),
@@ -92,6 +95,7 @@ def line(frame, centers, scale, parts):
         (0, 0, 255),
         2,
     )
+    off_history = []
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
             height, width = frame.shape[:2]
@@ -123,6 +127,7 @@ def main():
     cap = cv2.VideoCapture(0)
 
     while True:
+        start_time = time.time()
         ret, frame = cap.read()
         if not ret:
             break
@@ -138,6 +143,20 @@ def main():
         centers = get_center(cutted_frames, blur_kernel, threshold, close_kernel)
 
         line(frame, centers, scale, parts)
+        end_time = time.time()
+
+        fps = 1 / (end_time - start_time)
+        fps_history.append(fps)
+        avg_fps = sum(fps_history) / len(fps_history)
+        cv2.putText(
+            frame,
+            f"FPS: {int(avg_fps)}",
+            (5, 15),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            2,
+        )
 
         cv2.imshow("frame", frame)
 
