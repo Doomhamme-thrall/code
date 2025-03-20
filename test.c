@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
+#include <sys/time.h>
+
+int time_unix = 10000;
+
 int main()
 {
-    int a = 0;
-    scanf("%d", &a);
-    printf("%d %d %d", a / 15, a / 20, a * 90);
-
-    pow(a, 2);
+    while (1)
+    {
+        int currentTime = time(NULL);
+        printf("He! %d\n", currentTime);
+    }
     return 0;
 }

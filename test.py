@@ -1,19 +1,21 @@
 import cv2
 
-cap = cv2.VideoCapture(1)
-cap2 = cv2.VideoCapture(0)
 
-while 1:
-    ret, frame = cap.read()
-    ret2, frame2 = cap2.read()
-    if not ret:
-        break
-    if not ret2:
-        break
-    cv2.imshow("frame2", frame2)
-    cv2.imshow("frame", frame)
+def list_available_cameras(max_cameras=20):
+    available_cameras = []
+    for i in range(max_cameras):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            available_cameras.append(i)
+            cap.release()
+        else:
+            print("cammera", i, "cant use")
+    return available_cameras
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
-cap.release()
-cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    cameras = list_available_cameras()
+    if cameras:
+        print("Available cameras:", cameras)
+    else:
+        print("No cameras found.")
