@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import serial
 
-#ser = serial.Serial("COM13", 9600, timeout=0.1)
+# ser = serial.Serial("COM13", 9600, timeout=0.1)
 parts = 5
 binary_threshold = 5
 threshold = 22
@@ -112,7 +112,8 @@ def line(frame, centers, scale, parts):
             # 偏移量
             off = width // 2 - cX - part_width
             off_history.append(off)
-    filtered_off = sum(off_history) // len(off_history)
+    if len(off_history != 0):
+        filtered_off = sum(off_history) // len(off_history)
     cv2.line(
         frame,
         (width // 2 - filtered_off, 0),
@@ -121,7 +122,7 @@ def line(frame, centers, scale, parts):
         1,
     )
     print(filtered_off)
-    #ser.write(f"{filtered_off}\n".encode())
+    # ser.write(f"{filtered_off}\n".encode())
 
 
 def main():
