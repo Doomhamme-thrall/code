@@ -97,10 +97,9 @@ def line(frame, centers, scale, parts):
         2,
     )
     off_history = []
+    height, width = frame.shape[:2]  # 在函数内部定义 height 和 width
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
-            global height, width
-            height, width = frame.shape[:2]
             part_height = height // parts
             part_width = int(width * (1 - scale) / 2)
             start_row = i * part_height
@@ -113,7 +112,7 @@ def line(frame, centers, scale, parts):
             # 偏移量
             off = width // 2 - cX - part_width
             off_history.append(off)
-    if len(off_history )!= 0:
+    if len(off_history) != 0:
         filtered_off = sum(off_history) // len(off_history)
     cv2.line(
         frame,
