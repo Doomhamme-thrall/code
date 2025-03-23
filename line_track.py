@@ -97,6 +97,7 @@ def line(frame, centers, scale, parts):
         2,
     )
     off_history = []
+    filtered_off=0
     height, width = frame.shape[:2]  # 在函数内部定义 height 和 width
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
