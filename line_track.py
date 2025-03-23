@@ -112,7 +112,7 @@ def line(frame, centers, scale, parts):
             # 偏移量
             off = width // 2 - cX - part_width
             off_history.append(off)
-    if len(off_history != 0):
+    if len(off_history )!= 0:
         filtered_off = sum(off_history) // len(off_history)
     cv2.line(
         frame,
