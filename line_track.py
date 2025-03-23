@@ -12,6 +12,7 @@ threshold = 22
 scale = 0.5
 close_kernel = 5
 fps_history = deque(maxlen=30)
+global filtered_off
 
 
 def nothing(x):
