@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import serial
 
-ser = serial.Serial("COM5", 9600, timeout=0.1)
+#ser = serial.Serial("COM13", 9600, timeout=0.1)
 parts = 5
 binary_threshold = 5
 threshold = 22
@@ -98,6 +98,7 @@ def line(frame, centers, scale, parts):
     off_history = []
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
+            global height, width
             height, width = frame.shape[:2]
             part_height = height // parts
             part_width = int(width * (1 - scale) / 2)
@@ -120,7 +121,7 @@ def line(frame, centers, scale, parts):
         1,
     )
     print(filtered_off)
-    ser.write(f"{filtered_off}\n".encode())
+    #ser.write(f"{filtered_off}\n".encode())
 
 
 def main():
