@@ -25,8 +25,6 @@ def decode_qr_code(frame, qr_detected):
 
 def detect_colors(frame, last_color):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    # 定义颜色范围
     color_ranges = {
         "Blue": ((100, 150, 0), (140, 255, 255)),
         "Red": ((0, 150, 0), (10, 255, 255)),
@@ -39,7 +37,7 @@ def detect_colors(frame, last_color):
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for contour in contours:
             area = cv2.contourArea(contour)
-            if area > 500:  # 只考虑大于500像素的区域
+            if area > 500:
                 x, y, w, h = cv2.boundingRect(contour)
                 detected_colors.append(color_name)
                 if color_name != last_color:
@@ -50,7 +48,6 @@ def detect_colors(frame, last_color):
 
 
 def detect_animals(frame, last_animal):
-    # 使用YOLOv5模型进行动物识别
     results = model(frame)
     labels, cords = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
     n = len(labels)
@@ -82,7 +79,6 @@ def detect_animals(frame, last_animal):
 
 
 def main():
-    # 打开USB摄像头，参数0表示第一个摄像头
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
@@ -94,37 +90,29 @@ def main():
     last_animal = None
 
     while True:
-        # 读取摄像头的一帧
         ret, frame = cap.read()
 
         if not ret:
             print("frame error")
             break
 
-        # 识别二维码
         qr_data = decode_qr_code(frame, qr_detected)
         if qr_data:
             print(f"QR Code Data: {qr_data}")
             qr_detected = True
 
-        # 进行颜色识别
         detected_colors = detect_colors(frame, last_color)
         if detected_colors:
             last_color = detected_colors[0]
 
-        # 进行动物识别
         detected_animals = detect_animals(frame, last_animal)
         if detected_animals:
             last_animal = detected_animals[0]
-
-        # 显示帧
         cv2.imshow("Frame", frame)
 
-        # 按下'q'键退出
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
-    # 释放摄像头并关闭窗口
     cap.release()
     cv2.destroyAllWindows()
 

@@ -2,6 +2,8 @@
 using namespace std;
 int main()
 {
-    cout << "Hello, world!" << "\n";
+    int a = 999;
+    cout << sizeof(a) << "\n";
+    cout << a << "\n";
     return 0;
 }

@@ -7,10 +7,10 @@ import serial
 
 # ser = serial.Serial("COM13", 9600, timeout=0.1)
 parts = 5
-binary_threshold = 5
-threshold = 22
+blur = 7
+threshold = 23
 scale = 0.5
-close_kernel = 5
+close_kernel = 46
 fps_history = deque(maxlen=30)
 global filtered_off
 
@@ -22,7 +22,7 @@ def nothing(x):
 cv2.namedWindow("Trackbars")
 cv2.createTrackbar("parts", "Trackbars", parts, 10, nothing)
 cv2.createTrackbar("scale", "Trackbars", int(scale * 100), 100, nothing)
-cv2.createTrackbar("blur", "Trackbars", binary_threshold, 50, nothing)
+cv2.createTrackbar("blur", "Trackbars", blur, 50, nothing)
 cv2.createTrackbar("threshold", "Trackbars", threshold, 100, nothing)
 cv2.createTrackbar("close_kernel", "Trackbars", close_kernel, 100, nothing)
 
