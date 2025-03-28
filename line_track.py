@@ -5,7 +5,12 @@ import cv2
 import numpy as np
 import serial
 
-# ser = serial.Serial("COM13", 9600, timeout=0.1)
+from data_frame import frame_build
+
+ser = serial.Serial(
+    port="COM24",
+    baudrate=115200,
+)
 parts = 5
 blur = 7
 threshold = 23
@@ -97,7 +102,7 @@ def line(frame, centers, scale, parts):
         2,
     )
     off_history = []
-    filtered_off=0
+    filtered_off = 0
     height, width = frame.shape[:2]  # 在函数内部定义 height 和 width
     for i, (cX, cY) in enumerate(centers):
         if cX is not None and cY is not None:
@@ -123,7 +128,7 @@ def line(frame, centers, scale, parts):
         1,
     )
     print(filtered_off)
-    # ser.write(f"{filtered_off}\n".encode())
+    ser.write(frame_build(filtered_off))
 
 
 def main():
@@ -151,7 +156,7 @@ def main():
         fps = 1 / (end_time - start_time)
         fps_history.append(fps)
         avg_fps = sum(fps_history) / len(fps_history)
-        print(f"FPS: {int(avg_fps)}")
+        # print(f"FPS: {int(avg_fps)}")
         cv2.putText(
             frame,
             f"FPS: {int(avg_fps)}",
