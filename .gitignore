@@ -1,0 +1,4 @@
+/__pycache__
+*.exe
+test1/target
+test.*
