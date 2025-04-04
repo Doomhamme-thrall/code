@@ -4,15 +4,23 @@ import numpy as np
 hsv_min = np.array([118, 34, 119])
 hsv_max = np.array([146, 149, 161])
 
+x_before = 0
+y_before = 0
+
 
 def get_hsv_value(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         hsv_value = hsv_frame[y, x]
-        print(x, y)
+        print(x, 480 - y)
+        print(47 * (x / 640))
+        global x_before, y_before
+        print(x - x_before, y - y_before)
         print(f"HSV: {hsv_value}")
         global hsv_min, hsv_max
         hsv_min = np.minimum(hsv_min, hsv_value)
         hsv_max = np.maximum(hsv_max, hsv_value)
+        x_before = x
+        y_before = y
 
 
 cap = cv2.VideoCapture(1)
