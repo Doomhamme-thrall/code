@@ -7,7 +7,7 @@ hsv_max = np.array([146, 149, 161])
 
 def get_hsv_value(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
-        hsv_value = lab_frame[y, x]
+        hsv_value = hsv_frame[y, x]
         print(x, y)
         print(f"HSV: {hsv_value}")
         global hsv_min, hsv_max
@@ -15,16 +15,16 @@ def get_hsv_value(event, x, y, flags, param):
         hsv_max = np.maximum(hsv_max, hsv_value)
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 while True:
     ret, frame = cap.read()
     if not ret:
         break
     # hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lab_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     cv2.imshow("Frame", frame)
-    cv2.imshow("lab", lab_frame)
+    cv2.imshow("hsv", hsv_frame)
     cv2.setMouseCallback("Frame", get_hsv_value)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):

@@ -3,12 +3,25 @@ import serial
 frame_header = 0xAA  # 帧头
 
 
-def frame_build(data):
-    high_byte = (data >> 8) & 0xFF
-    low_byte = data & 0xFF
-    check = frame_header ^ high_byte ^ low_byte
-    frame = bytes([frame_header, high_byte, low_byte, check])
-    return frame
+def frame_build(*data):
+    """
+    数据帧生成
+
+    依次传入所需的数据
+
+    返回值直接用ser.write
+    """
+    frame = [frame_header]
+    check = frame_header
+
+    for value in data:
+        high_byte = (value >> 8) & 0xFF
+        low_byte = value & 0xFF
+        frame.extend([high_byte, low_byte])
+        check ^= high_byte ^ low_byte
+
+    frame.append(check)
+    return bytes(frame)
 
 
 if __name__ == "__main__":
