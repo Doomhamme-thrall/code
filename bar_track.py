@@ -16,10 +16,10 @@ class pid_data:
         pid_data.d = 0
 
 
-lower_hsv = np.array([20, 34, 119])
-upper_hsv = np.array([146, 183, 212])
+lower_lab = np.array([0, 144, 88])
+upper_lab = np.array([171, 239, 232])
 positions = []
-blur = 7
+blur = 73
 open_kernel = 46
 
 
@@ -30,14 +30,14 @@ def nothing(x):
 cv2.namedWindow("Trackbars")
 
 
-# cv2.createTrackbar("H_low", "Trackbars", lower_hsv[0], 180, nothing)
-# cv2.createTrackbar("S_low", "Trackbars", lower_hsv[1], 255, nothing)
-# cv2.createTrackbar("V_low", "Trackbars", lower_hsv[2], 255, nothing)
-# cv2.createTrackbar("H_high", "Trackbars", upper_hsv[0], 180, nothing)
-# cv2.createTrackbar("S_high", "Trackbars", upper_hsv[1], 255, nothing)
-# cv2.createTrackbar("V_high", "Trackbars", upper_hsv[2], 255, nothing)
-cv2.createTrackbar("open_kernel", "Trackbars", open_kernel, 100, nothing)
-cv2.createTrackbar("blur", "Trackbars", blur, 100, nothing)
+cv2.createTrackbar("H_low", "Trackbars", lower_lab[0], 180, nothing)
+cv2.createTrackbar("S_low", "Trackbars", lower_lab[1], 255, nothing)
+cv2.createTrackbar("V_low", "Trackbars", lower_lab[2], 255, nothing)
+cv2.createTrackbar("H_high", "Trackbars", upper_lab[0], 180, nothing)
+cv2.createTrackbar("S_high", "Trackbars", upper_lab[1], 255, nothing)
+cv2.createTrackbar("V_high", "Trackbars", upper_lab[2], 255, nothing)
+# cv2.createTrackbar("open_kernel", "Trackbars", open_kernel, 255, nothing)
+cv2.createTrackbar("blur", "Trackbars", blur, 255, nothing)
 
 pid = pid_data()
 
@@ -45,8 +45,40 @@ pid = pid_data()
 cap = cv2.VideoCapture(1)
 # ser = serial.Serial("COM5", 9600, timeout=0.1)
 
+speed_history = []
 
-input_queue = queue.Queue()
+
+def low_pass_filter(data, window_size=5, order=3):
+    """
+    多阶低通滤波器，过滤异常点
+    :param data: 输入数据列表
+    :param window_size: 滑动窗口大小
+    :param order: 滤波器阶数（应用次数）
+    :return: 当前滤波后的数据
+    """
+    if not data:
+        return None
+
+    # Step 1: Calculate the median and median absolute deviation (MAD)
+    median = np.median(data)
+    mad = np.median([abs(x - median) for x in data])
+
+    # Step 2: Define a threshold for outlier detection
+    threshold = 3 * mad  # Adjust the multiplier as needed
+
+    # Step 3: Filter out outliers
+    filtered_data = [x for x in data if abs(x - median) <= threshold]
+
+    # Step 4: Apply the low-pass filter
+    for _ in range(order):
+        filtered_data = [
+            sum(filtered_data[max(0, i - window_size + 1) : i + 1])
+            / len(filtered_data[max(0, i - window_size + 1) : i + 1])
+            for i in range(len(filtered_data))
+        ]
+
+    # Return the last value as the current filtered data
+    return filtered_data[-1] if filtered_data else None
 
 
 def read_keyboard_input():
@@ -66,10 +98,10 @@ input_thread.start()
 
 def get_speed(x, y):
     x -= 320
-    y -= 240  # 中心原点
+    y -= 270  # 中心原点
 
-    x *= 1
-    y *= 1  # 映射为实际坐标
+    x *= 25 / 320
+    y *= 13 / 270  # 映射为实际坐标
 
     lenth = math.sqrt(x**2 + y**2)
 
@@ -88,6 +120,10 @@ def get_speed(x, y):
         )
         print(f"x_speed: {x_speed}, y_speed: {y_speed}")
         speed = math.sqrt(x_speed**2 + y_speed**2)
+        speed_history.append(speed)
+        if len(speed_history) > 60:
+            speed_history.pop(0)
+        speed = low_pass_filter(speed_history)
         print(f"speed: {speed}")
         frame = frame_build(int(lenth), int(speed))
 
@@ -106,13 +142,13 @@ def frame_process(frame, blur, open_kernel):
     # rota_matrix = cv2.getRotationMatrix2D(center, 0, 1)  # 旋转
     # frame = cv2.warpAffine(rota_matrix, rota_matrix, (width, high))
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
 
-    blurred = cv2.GaussianBlur(hsv, (blur, blur), 0)
-    gaus_mask = cv2.inRange(blurred, lower_hsv, upper_hsv)
+    blurred = cv2.GaussianBlur(lab, (blur, blur), 0)
+    gaus_mask = cv2.inRange(blurred, lower_lab, upper_lab)
 
-    kernel = np.ones((open_kernel, open_kernel), np.uint8)
-    open_mask = cv2.morphologyEx(gaus_mask, cv2.MORPH_CLOSE, kernel)
+    # kernel = np.ones((open_kernel, open_kernel), np.uint8)
+    # open_mask = cv2.morphologyEx(gaus_mask, cv2.MORPH_CLOSE, kernel)
 
     # 背景减法器
     # bg_subtractor = cv2.createBackgroundSubtractorMOG2(
@@ -120,7 +156,7 @@ def frame_process(frame, blur, open_kernel):
     # )
     # fg_mask = bg_subtractor.apply(open_mask)
 
-    return open_mask
+    return gaus_mask
 
 
 def find_contours(mask):
@@ -128,22 +164,30 @@ def find_contours(mask):
 
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 3000 and area < 15000:
-            center, radius = cv2.minEnclosingCircle(contour)
-            circularity = 4 * np.pi * area / (cv2.arcLength(contour, True) ** 2)
-            if circularity > 0.8:
-                x, y = int(center[0]), int(center[1])
-                cv2.circle(frame, (x, y), int(radius), (0, 255, 0), 2)
-                cv2.putText(
-                    frame,
-                    f"({x}, {y},{area})",
-                    (x - 20, y - 20),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    2,
-                )
-                get_speed(x, y)
+        if area > 1000 and area < 15000:
+            # 计算轮廓的凸包
+            # 计算轮廓的凸包
+            hull = cv2.convexHull(contour)
+
+            # 获取凸包的最小外接圆
+            center, radius = cv2.minEnclosingCircle(hull)
+            center = (int(center[0]), int(center[1]))
+            radius = int(radius)
+
+            # 绘制最小外接圆
+            cv2.circle(frame, center, radius, (0, 255, 0), 2)
+
+            # 在圆心处显示坐标和面积
+            cv2.putText(
+                frame,
+                f"({center[0]}, {center[1]}, {area})",
+                (center[0] - 20, center[1] - 20),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 0),
+                2,
+            )
+            get_speed(center[0], center[1])
 
 
 while True:
@@ -151,14 +195,14 @@ while True:
     if not ret:
         break
 
-    # lower_hsv[0] = cv2.getTrackbarPos("H_low", "Trackbars")
-    # lower_hsv[1] = cv2.getTrackbarPos("S_low", "Trackbars")
-    # lower_hsv[2] = cv2.getTrackbarPos("V_low", "Trackbars")
-    # upper_hsv[0] = cv2.getTrackbarPos("H_high", "Trackbars")
-    # upper_hsv[1] = cv2.getTrackbarPos("S_high", "Trackbars")
-    # upper_hsv[2] = cv2.getTrackbarPos("V_high", "Trackbars")
+    lower_lab[0] = cv2.getTrackbarPos("H_low", "Trackbars")
+    lower_lab[1] = cv2.getTrackbarPos("S_low", "Trackbars")
+    lower_lab[2] = cv2.getTrackbarPos("V_low", "Trackbars")
+    upper_lab[0] = cv2.getTrackbarPos("H_high", "Trackbars")
+    upper_lab[1] = cv2.getTrackbarPos("S_high", "Trackbars")
+    upper_lab[2] = cv2.getTrackbarPos("V_high", "Trackbars")
     blur = cv2.getTrackbarPos("blur", "Trackbars")
-    open_kernel = cv2.getTrackbarPos("open_kernel", "Trackbars")
+    # open_kernel = cv2.getTrackbarPos("open_kernel", "Trackbars")
 
     (high, width) = frame.shape[:2]
     center = (width // 2, high // 2)
