@@ -44,7 +44,7 @@ pid = pid_data()
 
 
 cap = cv2.VideoCapture(1)
-ser = serial.Serial("COM5", 9600, timeout=0.1)
+ser = serial.Serial("COM5", 115200, timeout=0.1)
 
 speed_history = []
 
