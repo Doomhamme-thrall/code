@@ -109,12 +109,10 @@ def get_speed(x, y):
 
     current_time = time.time()
 
-    # 记录长度和时间
     positions.append((lenth, current_time))
     if len(positions) > 3:
         positions.pop(0)
 
-    # 计算 lenth 的变化速度
     if positions[-1][1] - positions[0][1] != 0:
         lenth_speed = (positions[-1][0] - positions[0][0]) / (
             positions[-1][1] - positions[0][1]
