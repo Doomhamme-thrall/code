@@ -5,6 +5,7 @@ import time
 
 import cv2
 import numpy as np
+import serial
 
 from data_frame import frame_build
 
@@ -43,7 +44,7 @@ pid = pid_data()
 
 
 cap = cv2.VideoCapture(1)
-# ser = serial.Serial("COM5", 9600, timeout=0.1)
+ser = serial.Serial("COM5", 9600, timeout=0.1)
 
 speed_history = []
 
@@ -98,34 +99,33 @@ input_thread.start()
 
 def get_speed(x, y):
     x -= 320
-    y -= 270  # 中心原点
+    y -= 219  # 坐标系变换
 
-    x *= 25 / 320
-    y *= 13 / 270  # 映射为实际坐标
+    x *= 25 / 288
+    y *= 13 / 219  # 映射为实际坐标
 
     lenth = math.sqrt(x**2 + y**2)
+    print(f"lenth: {lenth}")
 
     current_time = time.time()
 
-    positions.append((x, y, current_time))
+    # 记录长度和时间
+    positions.append((lenth, current_time))
     if len(positions) > 3:
         positions.pop(0)
 
-    if positions[-1][2] - positions[0][2] != 0:
-        x_speed = (positions[-1][0] - positions[0][0]) / (
-            positions[-1][2] - positions[0][2]
+    # 计算 lenth 的变化速度
+    if positions[-1][1] - positions[0][1] != 0:
+        lenth_speed = (positions[-1][0] - positions[0][0]) / (
+            positions[-1][1] - positions[0][1]
         )
-        y_speed = (positions[-1][1] - positions[0][1]) / (
-            positions[-1][2] - positions[0][2]
-        )
-        print(f"x_speed: {x_speed}, y_speed: {y_speed}")
-        speed = math.sqrt(x_speed**2 + y_speed**2)
-        speed_history.append(speed)
+        speed_history.append(lenth_speed)
         if len(speed_history) > 60:
             speed_history.pop(0)
         speed = low_pass_filter(speed_history)
         print(f"speed: {speed}")
         frame = frame_build(int(lenth), int(speed))
+        ser.write(frame)
 
 
 def frame_process(frame, blur, open_kernel):
