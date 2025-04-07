@@ -28,11 +28,11 @@ def frame_build(*data):
 
 if __name__ == "__main__":
     off = 200
-    frame = frame_build(off)
+    frame = frame_build(2, -23)
 
     ser = serial.Serial(
-        port="COM3",
+        port="COM5",
         baudrate=115200,
     )
-
+    print(frame)
     ser.write(frame)

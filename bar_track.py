@@ -4,8 +4,10 @@ import threading
 import time
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import serial
+from matplotlib.animation import FuncAnimation
 
 from data_frame import frame_build
 
@@ -17,10 +19,10 @@ class pid_data:
         pid_data.d = 0
 
 
-lower_lab = np.array([0, 144, 88])
+lower_lab = np.array([0, 158, 88])
 upper_lab = np.array([171, 239, 232])
 positions = []
-blur = 73
+blur = 41
 open_kernel = 46
 
 
@@ -29,8 +31,6 @@ def nothing(x):
 
 
 cv2.namedWindow("Trackbars")
-
-
 cv2.createTrackbar("H_low", "Trackbars", lower_lab[0], 180, nothing)
 cv2.createTrackbar("S_low", "Trackbars", lower_lab[1], 255, nothing)
 cv2.createTrackbar("V_low", "Trackbars", lower_lab[2], 255, nothing)
@@ -40,11 +40,9 @@ cv2.createTrackbar("V_high", "Trackbars", upper_lab[2], 255, nothing)
 # cv2.createTrackbar("open_kernel", "Trackbars", open_kernel, 255, nothing)
 cv2.createTrackbar("blur", "Trackbars", blur, 255, nothing)
 
-pid = pid_data()
-
 
 cap = cv2.VideoCapture(1)
-ser = serial.Serial("COM5", 115200, timeout=0.1)
+ser = serial.Serial("COM15", 115200, timeout=0.1)
 
 speed_history = []
 
@@ -82,29 +80,31 @@ def low_pass_filter(data, window_size=5, order=3):
     return filtered_data[-1] if filtered_data else None
 
 
-def read_keyboard_input():
-    while True:
-        try:
-            values = input("pid:").split()
-            if len(values) == 3:
-                pid.p, pid.i, pid.d = map(float, values)
-        except ValueError:
-            pass
+# def read_keyboard_input():
+#     while True:
+#         try:
+#             values = input("pid:").split()
+#             if len(values) == 3:
+#                 pid.p, pid.i, pid.d = map(float, values)
+#         except ValueError:
+#             pass
 
 
-input_thread = threading.Thread(target=read_keyboard_input)
-input_thread.daemon = True
-input_thread.start()
+# input_thread = threading.Thread(target=read_keyboard_input)
+# input_thread.daemon = True
+# input_thread.start()
 
 
 def get_speed(x, y):
-    x -= 320
-    y -= 219  # 坐标系变换
+    x -= 500
+    y -= 228  # 坐标系变换
 
-    x *= 25 / 288
-    y *= 13 / 219  # 映射为实际坐标
+    x *= 43 / 500
+    y *= 21.5 / 230  # 映射为实际坐标
 
     lenth = math.sqrt(x**2 + y**2)
+    if x < 0:
+        lenth = -lenth
     print(f"lenth: {lenth}")
 
     current_time = time.time()
@@ -162,20 +162,15 @@ def find_contours(mask):
 
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 1000 and area < 15000:
-            # 计算轮廓的凸包
-            # 计算轮廓的凸包
+        if area > 600 and area < 15000:
             hull = cv2.convexHull(contour)
 
-            # 获取凸包的最小外接圆
-            center, radius = cv2.minEnclosingCircle(hull)
+            center, radius = cv2.minEnclosingCircle(hull)  # 最小外接圆
             center = (int(center[0]), int(center[1]))
             radius = int(radius)
 
-            # 绘制最小外接圆
             cv2.circle(frame, center, radius, (0, 255, 0), 2)
 
-            # 在圆心处显示坐标和面积
             cv2.putText(
                 frame,
                 f"({center[0]}, {center[1]}, {area})",

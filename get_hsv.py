@@ -14,7 +14,7 @@ def get_LAB_value(event, x, y, flags, param):
         print(x, 480 - y)
         print(47 * (x / 640))
         global x_before, y_before
-        print(x - x_before, y - y_before)
+        # print(x - x_before, y - y_before)
         print(f"LAB: {LAB_value}")
         global LAB_min, LAB_max
         LAB_min = np.minimum(LAB_min, LAB_value)
