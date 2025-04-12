@@ -8,7 +8,7 @@ import serial
 from data_frame import frame_build
 
 ser = serial.Serial(
-    port="COM4",
+    port="COM5",
     baudrate=115200,
 )
 parts = 5
