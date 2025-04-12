@@ -8,7 +8,7 @@ import serial
 from data_frame import frame_build
 
 ser = serial.Serial(
-    port="COM5",
+    port="COM26",
     baudrate=115200,
 )
 parts = 5
@@ -18,6 +18,42 @@ scale = 0.8
 close_kernel = 46
 fps_history = deque(maxlen=30)
 global filtered_off
+
+# 初始化 PID 参数
+P, I, D = 0, 0, 0
+
+
+def low_pass_filter(data, window_size=5, order=3):
+    """
+    多阶低通滤波器，过滤异常点
+    :param data: 输入数据列表
+    :param window_size: 滑动窗口大小
+    :param order: 滤波器阶数（应用次数）
+    :return: 当前滤波后的数据
+    """
+    if not data:
+        return None
+
+    # Step 1: Calculate the median and median absolute deviation (MAD)
+    median = np.median(data)
+    mad = np.median([abs(x - median) for x in data])
+
+    # Step 2: Define a threshold for outlier detection
+    threshold = 3 * mad  # Adjust the multiplier as needed
+
+    # Step 3: Filter out outliers
+    filtered_data = [x for x in data if abs(x - median) <= threshold]
+
+    # Step 4: Apply the low-pass filter
+    for _ in range(order):
+        filtered_data = [
+            sum(filtered_data[max(0, i - window_size + 1) : i + 1])
+            / len(filtered_data[max(0, i - window_size + 1) : i + 1])
+            for i in range(len(filtered_data))
+        ]
+
+    # Return the last value as the current filtered data
+    return filtered_data[-1] if filtered_data else None
 
 
 def nothing(x):
@@ -127,11 +163,15 @@ def line(frame, centers, scale, parts):
         (255, 0, 0),
         1,
     )
-    print(filtered_off)
-    ser.write(frame_build(filtered_off))
+    # print(filtered_off)
+    return filtered_off
+
+
+speed_history = []
 
 
 def main():
+    global P, I, D
     cap = cv2.VideoCapture(0)
     while True:
         start_time = time.time()
@@ -149,7 +189,21 @@ def main():
         cutted_frames = frame_cut(frame, parts, scale)
         centers = get_center(cutted_frames, blur_kernel, threshold, close_kernel)
 
-        line(frame, centers, scale, parts)
+        filtered_off = line(frame, centers, scale, parts)
+
+        # 读取键盘输入的 PID 参数
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("p"):
+            P = int(input("输入 P 值: "))
+        elif key == ord("i"):
+            I = int(input("输入 I 值: "))
+        elif key == ord("d"):
+            D = int(input("输入 D 值: "))
+
+        # 打包并发送数据
+        data = frame_build(filtered_off, P, I, D)
+        ser.write(data)
+
         end_time = time.time()
 
         fps = 1 / (end_time - start_time)
@@ -168,7 +222,7 @@ def main():
 
         cv2.imshow("frame", frame)
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if key == ord("q"):
             break
     cap.release()
     cv2.destroyAllWindows()
