@@ -1,13 +1,9 @@
 import math
-import queue
-import threading
 import time
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import serial
-from matplotlib.animation import FuncAnimation
 
 from data_frame import frame_build
 
@@ -37,12 +33,12 @@ cv2.createTrackbar("V_low", "Trackbars", lower_lab[2], 255, nothing)
 cv2.createTrackbar("H_high", "Trackbars", upper_lab[0], 180, nothing)
 cv2.createTrackbar("S_high", "Trackbars", upper_lab[1], 255, nothing)
 cv2.createTrackbar("V_high", "Trackbars", upper_lab[2], 255, nothing)
-# cv2.createTrackbar("open_kernel", "Trackbars", open_kernel, 255, nothing)
+cv2.createTrackbar("open_kernel", "Trackbars", open_kernel, 255, nothing)
 cv2.createTrackbar("blur", "Trackbars", blur, 255, nothing)
 
 
-cap = cv2.VideoCapture(1)
-ser = serial.Serial("COM15", 115200, timeout=0.1)
+cap = cv2.VideoCapture(0)
+ser = serial.Serial("COM5", 115200, timeout=0.1)
 
 speed_history = []
 

@@ -14,7 +14,7 @@ ser = serial.Serial(
 parts = 5
 blur = 7
 threshold = 23
-scale = 0.5
+scale = 0.8
 close_kernel = 46
 fps_history = deque(maxlen=30)
 global filtered_off
@@ -133,7 +133,6 @@ def line(frame, centers, scale, parts):
 
 def main():
     cap = cv2.VideoCapture(0)
-
     while True:
         start_time = time.time()
         ret, frame = cap.read()
