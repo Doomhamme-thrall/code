@@ -92,11 +92,11 @@ def low_pass_filter(data, window_size=5, order=3):
 
 
 def get_speed(x, y):
-    x -= 500
-    y -= 228  # 坐标系变换
+    # x -= 500
+    # y -= 228  # 坐标系变换
 
-    x *= 43 / 500
-    y *= 21.5 / 230  # 映射为实际坐标
+    # x *= 43 / 500
+    # y *= 21.5 / 230  # 映射为实际坐标
 
     lenth = math.sqrt(x**2 + y**2)
     if x < 0:
@@ -141,8 +141,8 @@ def frame_process(frame, blur, open_kernel):
     blurred = cv2.GaussianBlur(lab, (blur, blur), 0)
     gaus_mask = cv2.inRange(blurred, lower_lab, upper_lab)
 
-    # kernel = np.ones((open_kernel, open_kernel), np.uint8)
-    # open_mask = cv2.morphologyEx(gaus_mask, cv2.MORPH_CLOSE, kernel)
+    kernel = np.ones((open_kernel, open_kernel), np.uint8)
+    open_mask = cv2.morphologyEx(gaus_mask, cv2.MORPH_CLOSE, kernel)
 
     # 背景减法器
     # bg_subtractor = cv2.createBackgroundSubtractorMOG2(
@@ -150,7 +150,7 @@ def frame_process(frame, blur, open_kernel):
     # )
     # fg_mask = bg_subtractor.apply(open_mask)
 
-    return gaus_mask
+    return open_mask
 
 
 def find_contours(mask):
@@ -176,7 +176,7 @@ def find_contours(mask):
                 (0, 255, 0),
                 2,
             )
-            get_speed(center[0], center[1])
+            # get_speed(center[0], center[1])
 
 
 while True:

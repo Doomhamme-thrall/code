@@ -37,6 +37,26 @@
         "cwd": "${fileDirname}"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "CMake build",
+      "type": "shell",
+      "command": "CMake",
+      "args": ["--build", "${workspaceFolder}/build"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [],
+      "detail": "build cmake project"
+    },
+    {
+      "label": "CMake configure",
+      "type": "shell",
+      "command": "CMake",
+      "args": ["-S", "${workspaceFolder}", "-B", "${workspaceFolder}/build"],
+      "problemMatcher": [],
+      "detail": "configure cmake project"
     }
   ]
 }

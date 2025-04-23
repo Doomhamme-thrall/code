@@ -4,3 +4,4 @@ test1/target
 test.*
 runs/
 *.pt
+build/

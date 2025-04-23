@@ -16,6 +16,11 @@ def frame_build(*data):
     # check = frame_header
 
     for value in data:
+        if value < 0:
+            value = -value
+            frame.append(0x00)
+        else:
+            frame.append(0x01)
         high_byte = (value >> 8) & 0xFF
         low_byte = value & 0xFF
         frame.extend([high_byte, low_byte])
@@ -28,11 +33,6 @@ def frame_build(*data):
 
 if __name__ == "__main__":
     off = 200
-    frame = frame_build(2, -23)
+    frame = frame_build(128)
 
-    ser = serial.Serial(
-        port="COM5",
-        baudrate=115200,
-    )
     print(frame)
-    ser.write(frame)
