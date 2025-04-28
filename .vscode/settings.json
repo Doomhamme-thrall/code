@@ -68,6 +68,8 @@
     "-Wnull-dereference"
   ],
   "C_Cpp_Runner.msvcWarnings": ["/W4", "/permissive-", "/w14242"],
+  "cmake.configureOnOpen": false,
+  "cmake.configureOnEdit": false,
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff", // 默认使用 Ruff 格式化
     "editor.formatOnSave": true, // 保存时自动格式化
