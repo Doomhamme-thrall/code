@@ -4,7 +4,6 @@ project(HelloWorld)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPLIER "g++")
-
 add_executable(test test.cpp)
 
 

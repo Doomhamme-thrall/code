@@ -44,7 +44,8 @@
     "numbers": "cpp",
     "stdexcept": "cpp",
     "streambuf": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "fstream": "cpp"
   },
 
   "typeinfo": "cpp",
@@ -74,5 +75,5 @@
       // "source.fixAll.ruff": "explicit", // 保存时自动修复可修复的 lint 错误
       "source.organizeImports.ruff": "explicit" // 保存时自动排序 import 语句
     }
-  },
+  }
 }

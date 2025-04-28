@@ -6,7 +6,7 @@ import numpy as np
 import serial
 
 from data_frame import frame_build
-from test import detect_color_and_shape
+from visualize import detect_color_and_shape
 
 ser = serial.Serial(
     port="/dev/ttyUSB0",  # 串口名称

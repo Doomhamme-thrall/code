@@ -39,16 +39,16 @@
       "problemMatcher": []
     },
     {
-      "label": "CMake build",
+      "label": "CMake Build",
       "type": "shell",
-      "command": "CMake",
+      "command": "cmake",
       "args": ["--build", "${workspaceFolder}/build"],
       "group": {
         "kind": "build",
-        "isDefault": false
+        "isDefault": true
       },
       "problemMatcher": [],
-      "detail": "build cmake project"
+      "detail": "Build the project using CMake."
     },
     {
       "label": "CMake configure",
