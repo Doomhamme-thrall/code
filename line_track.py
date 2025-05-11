@@ -134,7 +134,7 @@ def line(frame, centers, scale, parts):
     """
     连接中心,计算偏移量
     """
-    prev_center = None 
+    prev_center = None
     cv2.line(
         frame,
         (frame.shape[1] // 2, 0),

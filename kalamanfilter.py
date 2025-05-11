@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class KalmanFilter:
     def __init__(self, A, B, H, Q, R, P, x):
         """
@@ -38,7 +39,7 @@ class KalmanFilter:
         K = np.dot(np.dot(self.P, self.H.T), np.linalg.inv(S))  # 卡尔曼增益
         self.x = self.x + np.dot(K, y)  # 更新状态估计
         I = np.eye(self.A.shape[0])  # 单位矩阵
-        self.P = np.dot(I - np.dot(K, self.H), self.P)  # 更��估计误差协方差
+        self.P = np.dot(I - np.dot(K, self.H), self.P)
 
     def get_state(self):
         """

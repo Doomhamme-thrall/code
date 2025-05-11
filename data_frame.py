@@ -1,5 +1,3 @@
-import serial
-
 frame_header = 0xAA  # 帧头
 frame_tail = 0xFF  # 帧尾
 
@@ -10,7 +8,7 @@ def frame_build(*data):
 
     依次传入所需的数据
 
-    返回值直接用ser.write
+    返回值可直接用ser.write
     """
     frame = [frame_header]
     # check = frame_header
