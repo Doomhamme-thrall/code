@@ -6,3 +6,4 @@ runs/
 *.pt
 build/
 result.json
+.ruff_cache
