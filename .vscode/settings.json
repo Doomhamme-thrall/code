@@ -1,5 +1,4 @@
 {
-
   "files.associations": {
     "time.h": "c",
     "ostream": "cpp",
@@ -46,7 +45,9 @@
     "stdexcept": "cpp",
     "streambuf": "cpp",
     "typeinfo": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "cstring": "cpp",
+    "unordered_set": "cpp"
   },
   "cmake.configureOnOpen": false,
   "cmake.configureOnEdit": false,

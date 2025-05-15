@@ -3,15 +3,15 @@ from collections import deque
 
 import cv2
 import numpy as np
-import serial
+# import serial
+import tqdm
 
 from data_frame import frame_build
-from visualize import detect_color_and_shape
 
-ser = serial.Serial(
-    port="/dev/ttyUSB0",  # 串口名称
-    baudrate=115200,
-)
+# ser = serial.Serial(
+#     port="/dev/ttyUSB0",  # 串口名称
+#     baudrate=115200,
+# )
 parts = 5
 blur = 7
 threshold = 23
@@ -94,10 +94,7 @@ def frame_cut(frame, num_parts, scale, vscale=0.6):
 
     for i in range(num_parts):
         start_row = i * part_height
-        if i == num_parts - 1:
-            end_row = height
-        else:
-            end_row = (i + 1) * part_height
+        end_row = height if i == num_parts - 1 else (i + 1) * part_height
         cutted_frame = frame[
             start_row:end_row,
             int(width * (1 - scale) / 2) : int(width * (1 + scale) / 2),
@@ -113,7 +110,7 @@ def get_center(frames):
     """
     centers = []
 
-    for frame in frames:
+    for frame in tqdm.tqdm(frames):
         contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         if contours:
             c = max(contours, key=cv2.contourArea)
@@ -256,7 +253,6 @@ def main():
         start_time = time.time()
         ret, frame = cap.read()
         frame = cv2.rotate(frame, cv2.ROTATE_180)
-        detect_color_and_shape(frame)
         if not ret:
             break
         # 滑条读取
@@ -292,7 +288,7 @@ def main():
 
         print(filtered_off)
         data = frame_build(filtered_off)
-        ser.write(data)
+        # ser.write(data)
 
         end_time = time.time()
 
