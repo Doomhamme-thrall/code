@@ -7,3 +7,4 @@ runs/
 build/
 result.json
 .ruff_cache
+*.log
