@@ -10,7 +10,7 @@ app = typer.Typer()
 @app.command(name="remind_after")
 def remind_after(
     mode: str = typer.Option("min", "--mode", "-m"),
-    time_value: float = typer.Option(1.0, "--time", "-t", help="时间值"),
+    time_value: float = typer.Option(10, "--time", "-t", help="时间值"),
 ):
     if mode == "min":
         base_time = 60
@@ -42,8 +42,8 @@ def remind_after(
 
 @app.command("remind_every")
 def remind_every(
-    mode: str = typer.Option("minute", "--mode", "-m"),
-    time_value: float = typer.Option(1.0, "--time", "-t"),
+    mode: str = typer.Option("min", "--mode", "-m"),
+    time_value: float = typer.Option(10, "--time", "-t"),
 ):
     while 1:
         remind_after(
