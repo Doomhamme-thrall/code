@@ -83,7 +83,7 @@ This repository contains a collection of Python scripts focused on **computer vi
 - **Technologies**: OpenCV, numpy
 - **Use Case**: Real-world distance measurement from stereo images
 
-#### 7. **model_lenth.py** - Deep Learning-Based Stereo Matching
+#### 7. **model_lenth.py** - Deep Learning-Based Stereo Matching (Note: filename has typo 'lenth')
 - **Purpose**: Distance measurement using deep learning stereo matching models
 - **Key Features**:
   - ONNX model loading for disparity estimation
@@ -112,7 +112,7 @@ This repository contains a collection of Python scripts focused on **computer vi
 - **Technologies**: numpy
 - **Use Case**: Reusable filtering functions for sensor data processing
 
-#### 9. **kalamanfilter.py** - Kalman Filter Implementation
+#### 9. **kalamanfilter.py** - Kalman Filter Implementation (Note: filename has typo 'kalaman')
 - **Purpose**: Full Kalman filter implementation for state estimation
 - **Key Features**:
   - State prediction with control input
@@ -246,7 +246,7 @@ This repository contains a collection of Python scripts focused on **computer vi
 
 ## Dependencies (requ.txt)
 
-The file appears to be corrupted (unusual encoding), but based on code analysis, the actual dependencies are:
+The file appears to be malformed (has spaces between each character, making it difficult to parse), but based on code analysis, the actual dependencies are:
 
 ```
 numpy==1.26.4
@@ -318,7 +318,8 @@ This codebase appears to be for:
 - **Chinese Comments**: One file has a Chinese filename (协程asyncio.py)
 - **Active Development**: Mix of production code and experimental/test scripts
 - **Missing Files**: test.cpp (referenced in CMakeLists.txt) and some calibration files are not included
-- **Encoding Issues**: requ.txt has unusual encoding suggesting possible corruption
+- **Encoding Issues**: requ.txt is malformed with spaces between each character
+- **Typos in Filenames**: model_lenth.py (should be model_length.py) and kalamanfilter.py (should be kalmanfilter.py)
 
 ---
 
